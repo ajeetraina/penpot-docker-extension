@@ -1,107 +1,230 @@
-# Penpot
+# 🎨 Penpot Docker Extension
 
-This repository defines an example of a Docker extension. The files in this repository have been automatically generated as a result of running `docker extension init`.
+A Docker Desktop extension for deploying and managing a self-hosted Penpot instance. Penpot is an open-source design and prototyping platform for cross-domain teams.
 
-This extension is composed of:
+![Penpot Logo](./penpot.svg)
 
-- A [frontend](./ui) app in React that makes a request to the `/hello` endpoint and displays the payload in Docker Desktop.
-- A [backend](./backend) container that runs an API in Go. It exposes the `/hello` endpoint which returns a JSON payload.
+## 🌟 Features
 
-> You can build your Docker Extension using your fav tech stack:
->
-> - Frontend: React, Angular, Vue, Svelte, etc.
->   Basically, any frontend framework you can bundle in an `index.html` file with CSS, and JS assets.
-> - Backend (optional): anything that can run in a container.
+- **One-Click Deployment**: Start a complete Penpot stack with a single click
+- **Status Monitoring**: Real-time status of all Penpot services
+- **Service Management**: Start, stop, and restart individual services
+- **Logs Viewer**: View logs for any Penpot service
+- **Quick Access**: Direct links to Penpot UI and MailCatcher
+- **Health Checks**: Monitor the health status of all services
 
-<details>
-  <summary>Looking for more templates?</summary>
+## 📋 Prerequisites
 
-1. [React + NodeJS](https://github.com/benja-M-1/node-backend-extension).
-2. [React + .NET 6 WebAPI](https://github.com/felipecruz91/dotnet-api-docker-extension).
+- Docker Desktop 4.8.0 or later
+- Minimum 4GB RAM available for Docker
+- Ports 9001 and 1080 available on your host
 
-Request one or submit yours [here](https://github.com/docker/extensions-sdk/issues).
+## 🚀 Installation
 
-</details>
+### Option 1: Install from Docker Hub (Coming Soon)
 
-## Local development
-
-You can use `docker` to build, install and push your extension. Also, we provide an opinionated [Makefile](Makefile) that could be convenient for you. There isn't a strong preference of using one over the other, so just use the one you're most comfortable with.
-
-To build the extension, use `make build-extension` **or**:
-
-```shell
-  docker buildx build -t ajeetraina777/penpot-docker-extension:latest . --load
+```bash
+docker extension install ajeetraina777/penpot-docker-extension:latest
 ```
 
-To install the extension, use `make install-extension` **or**:
+### Option 2: Build and Install Locally
 
-```shell
-  docker extension install ajeetraina777/penpot-docker-extension:latest
+1. Clone this repository:
+```bash
+git clone https://github.com/ajeetraina/penpot-docker-extension.git
+cd penpot-docker-extension
 ```
 
-> If you want to automate this command, use the `-f` or `--force` flag to accept the warning message.
-
-To preview the extension in Docker Desktop, open Docker Dashboard once the installation is complete. The left-hand menu displays a new tab with the name of your extension. You can also use `docker extension ls` to see that the extension has been installed successfully.
-
-### Frontend development
-
-During the development of the frontend part, it's helpful to use hot reloading to test your changes without rebuilding your entire extension. To do this, you can configure Docker Desktop to load your UI from a development server.
-Assuming your app runs on the default port, start your UI app and then run:
-
-```shell
-  cd ui
-  npm install
-  npm run dev
+2. Build the extension:
+```bash
+make build-extension
 ```
 
-This starts a development server that listens on port `3000`.
-
-You can now tell Docker Desktop to use this as the frontend source. In another terminal run:
-
-```shell
-  docker extension dev ui-source ajeetraina777/penpot-docker-extension:latest http://localhost:3000
+3. Install the extension:
+```bash
+make install-extension
 ```
 
-In order to open the Chrome Dev Tools for your extension when you click on the extension tab, run:
+## 🎯 Getting Started
 
-```shell
-  docker extension dev debug ajeetraina777/penpot-docker-extension:latest
+1. **Open Docker Desktop** and navigate to the Extensions tab
+2. **Find Penpot** in the list of installed extensions
+3. **Click Start** to launch all Penpot services
+4. **Wait** for all services to become healthy (first launch may take 2-3 minutes)
+5. **Access Penpot** at http://localhost:9001
+6. **Register** a new account
+7. **Check MailCatcher** at http://localhost:1080 for confirmation emails
+
+## 📦 What's Included
+
+The extension deploys a complete Penpot stack with the following services:
+
+- **penpot-frontend**: Web interface (Port 9001)
+- **penpot-backend**: API server
+- **penpot-exporter**: Export and rendering service
+- **penpot-postgres**: PostgreSQL database
+- **penpot-valkey**: Cache service (Redis-compatible)
+- **penpot-mailcatch**: Email testing service (Port 1080)
+
+## 🔧 Configuration
+
+### Default Settings
+
+The extension uses development-friendly defaults:
+- Email verification is disabled
+- Secure session cookies are disabled (for localhost)
+- MailCatcher is used as SMTP server
+- Telemetry is enabled with "docker-extension" referer
+
+### Customizing Configuration
+
+To customize Penpot configuration:
+
+1. Stop the Penpot services
+2. Edit the `docker-compose.yaml` file in the extension
+3. Modify environment variables as needed
+4. Restart the services
+
+For production deployments, you should:
+- Enable email verification
+- Configure a real SMTP server
+- Enable secure session cookies
+- Set a strong `PENPOT_SECRET_KEY`
+- Configure proper SSL/TLS with a reverse proxy
+
+See [Penpot Configuration Guide](https://help.penpot.app/technical-guide/configuration/) for all available options.
+
+## 📊 Service Status
+
+The extension provides real-time monitoring of all services:
+
+- **Running**: Service is active and operational
+- **Healthy**: Service health checks are passing
+- **Starting**: Service is initializing
+- **Stopped**: Service is not running
+- **Unhealthy**: Service health checks are failing
+
+## 📝 Viewing Logs
+
+1. Click the **eye icon** next to any service in the services table
+2. View the last 100 log lines
+3. Use logs to troubleshoot issues
+
+## 🔄 Updating Penpot
+
+To update to the latest Penpot version:
+
+1. Stop all Penpot services
+2. Set the `PENPOT_VERSION` environment variable:
+   ```bash
+   export PENPOT_VERSION=2.4.3
+   ```
+3. Restart the services
+
+To always use the latest version, leave `PENPOT_VERSION` unset.
+
+## 🛠️ Development
+
+### Frontend Development
+
+```bash
+cd ui
+npm install
+npm run dev
 ```
 
-Each subsequent click on the extension tab will also open Chrome Dev Tools. To stop this behaviour, run:
-
-```shell
-  docker extension dev reset ajeetraina777/penpot-docker-extension:latest
+Then in another terminal:
+```bash
+docker extension dev ui-source ajeetraina777/penpot-docker-extension:latest http://localhost:3000
 ```
 
-### Backend development (optional)
+### Backend Development
 
-This example defines an API in Go that is deployed as a backend container when the extension is installed. This backend could be implemented in any language, as it runs inside a container. The extension frameworks provides connectivity from the extension UI to a socket that the backend has to connect to on the server side.
-
-Note that an extension doesn't necessarily need a backend container, but in this example we include one for teaching purposes.
-
-Whenever you make changes in the [backend](./backend) source code, you will need to compile them and re-deploy a new version of your backend container.
-Use the `docker extension update` command to remove and re-install the extension automatically:
-
-```shell
+After making changes to `backend/main.go`:
+```bash
 docker extension update ajeetraina777/penpot-docker-extension:latest
 ```
 
-> If you want to automate this command, use the `-f` or `--force` flag to accept the warning message.
+### Debug Mode
 
-> Extension containers are hidden from the Docker Dashboard by default. You can change this in Settings > Extensions > Show Docker Extensions system containers.
-
-### Clean up
-
-To remove the extension:
-
-```shell
-docker extension rm ajeetraina777/penpot-docker-extension:latest
+Enable Chrome DevTools:
+```bash
+docker extension dev debug ajeetraina777/penpot-docker-extension:latest
 ```
 
-## What's next?
+## 🐛 Troubleshooting
 
-- To learn more about how to build your extension refer to the Extension SDK docs at https://docs.docker.com/desktop/extensions-sdk/.
-- To publish your extension in the Marketplace visit https://www.docker.com/products/extensions/submissions/.
-- To report issues and feedback visit https://github.com/docker/extensions-sdk/issues.
-- To look for other ideas of new extensions, or propose new ideas of extensions you would like to see, visit https://github.com/docker/extension-ideas/discussions.
+### Services Won't Start
+
+1. Check that ports 9001 and 1080 are available
+2. Ensure Docker has enough resources (4GB+ RAM)
+3. Check Docker Desktop logs
+4. Try restarting Docker Desktop
+
+### Database Issues
+
+If you encounter database initialization issues:
+
+1. Stop all Penpot services
+2. Remove the postgres volume:
+   ```bash
+   docker volume rm penpot_postgres_v15
+   ```
+3. Restart the services
+
+### Performance Issues
+
+If Penpot is slow:
+
+1. Allocate more RAM to Docker Desktop (Settings → Resources)
+2. Check CPU usage in Docker Dashboard
+3. Ensure no other heavy applications are running
+
+## 📚 Learn More
+
+- [Penpot Official Documentation](https://help.penpot.app/)
+- [Penpot GitHub Repository](https://github.com/penpot/penpot)
+- [Docker Extensions SDK](https://docs.docker.com/desktop/extensions-sdk/)
+- [Penpot Community](https://community.penpot.app/)
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This Docker Extension is open-source. Penpot itself is licensed under the MPL-2.0 License.
+
+## 🙏 Acknowledgments
+
+- [Penpot Team](https://penpot.app/) for creating this amazing open-source design tool
+- [Docker Extensions SDK](https://docs.docker.com/desktop/extensions-sdk/) for the extension framework
+
+## 📧 Support
+
+- For Penpot-specific issues: [Penpot Community](https://community.penpot.app/)
+- For extension issues: [GitHub Issues](https://github.com/ajeetraina/penpot-docker-extension/issues)
+- For Docker Desktop issues: [Docker Support](https://www.docker.com/support/)
+
+## 🎨 About Penpot
+
+Penpot is the first open-source design and prototyping platform meant for cross-domain teams. It's web-based and works with open web standards (SVG). For designers and developers working together, creating products with a truly collaborative workflow.
+
+**Key Features:**
+- Cross-platform and browser-based
+- Open web standards (SVG)
+- Real-time collaboration
+- Developer-friendly (Inspect mode, code generation)
+- Plugin system
+- Self-hosted option
+- No vendor lock-in
+
+---
+
+Made with ❤️ by [Ajeet Singh Raina](https://github.com/ajeetraina) - Docker Captain & Community Leader

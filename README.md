@@ -14,7 +14,7 @@ A Docker Desktop extension for deploying and managing a self-hosted Penpot insta
 
 ## 📋 Prerequisites
 
-- Docker Desktop 4.8.0 or later
+- Docker Desktop (latest version)
 - Minimum 4GB RAM available for Docker
 - Ports 9001 and 1080 available on your host
 

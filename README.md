@@ -2,7 +2,6 @@
 
 A Docker Desktop extension for deploying and managing a self-hosted Penpot instance. Penpot is an open-source design and prototyping platform for cross-domain teams.
 
-![Penpot Logo](./penpot.svg)
 
 ## 🌟 Features
 

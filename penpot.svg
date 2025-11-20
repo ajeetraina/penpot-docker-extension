@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="penpotGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4A90E2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#7B68EE;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background Circle -->
+  <circle cx="50" cy="50" r="48" fill="url(#penpotGradient)"/>
+  
+  <!-- Design Pen Icon -->
+  <g transform="translate(20, 20)">
+    <!-- Pen Body -->
+    <path d="M 35 5 L 55 25 L 35 45 L 15 25 Z" fill="white" opacity="0.9"/>
+    
+    <!-- Pen Tip -->
+    <path d="M 35 45 L 25 55 L 35 50 L 45 55 Z" fill="white" opacity="0.8"/>
+    
+    <!-- Accent Lines -->
+    <line x1="30" y1="20" x2="40" y2="30" stroke="white" stroke-width="2" opacity="0.6"/>
+    <line x1="30" y1="30" x2="40" y2="40" stroke="white" stroke-width="2" opacity="0.6"/>
+  </g>
+  
+  <!-- Small Design Element -->
+  <circle cx="75" cy="25" r="8" fill="white" opacity="0.7"/>
+  <circle cx="75" cy="75" r="6" fill="white" opacity="0.5"/>
+</svg>

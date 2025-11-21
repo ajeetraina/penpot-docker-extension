@@ -10,7 +10,7 @@ require (
 
 require (
 	github.com/Microsoft/go-winio v0.6.1 // indirect
-	github.com/docker/distribution v2.8.3+incompatible // indirect
+	github.com/distribution/reference v0.5.0 // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
@@ -33,3 +33,5 @@ require (
 	golang.org/x/tools v0.6.0 // indirect
 	gotest.tools/v3 v3.5.1 // indirect
 )
+
+replace github.com/docker/distribution => github.com/distribution/distribution/v3 v3.0.0-alpha.1

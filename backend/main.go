@@ -8,6 +8,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"os/exec"
 	"strings"
 
 	"github.com/docker/docker/api/types"
@@ -119,7 +120,7 @@ func getPenpotStatus(ctx echo.Context) error {
 			Data: PenpotStatus{
 				Running:  false,
 				Services: []ServiceStatus{},
-				Message:  "Penpot is not deployed",
+				Message:  "Penpot is not deployed. Click Start to deploy.",
 			},
 		})
 	}
@@ -188,13 +189,26 @@ func startPenpot(ctx echo.Context) error {
 		})
 	}
 
+	// If no containers exist, deploy with docker compose
 	if len(containers) == 0 {
-		return ctx.JSON(http.StatusNotFound, HTTPMessageBody{
-			Success: false,
-			Message: "Penpot containers not found. Please ensure the extension is properly installed.",
+		logger.Info("No Penpot containers found, deploying with docker compose...")
+		cmd := exec.Command("docker", "compose", "-f", "/docker-compose.yaml", "up", "-d")
+		output, err := cmd.CombinedOutput()
+		if err != nil {
+			logger.Errorf("Failed to deploy Penpot: %v, output: %s", err, string(output))
+			return ctx.JSON(http.StatusInternalServerError, HTTPMessageBody{
+				Success: false,
+				Message: fmt.Sprintf("Failed to deploy Penpot: %s", string(output)),
+			})
+		}
+		logger.Info("Penpot deployed successfully")
+		return ctx.JSON(http.StatusOK, HTTPMessageBody{
+			Success: true,
+			Message: "Penpot deployed successfully. Services are starting...",
 		})
 	}
 
+	// Start existing stopped containers
 	startedCount := 0
 	for _, c := range containers {
 		if c.State != "running" {

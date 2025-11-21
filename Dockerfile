@@ -4,7 +4,7 @@ WORKDIR /backend
 COPY backend/go.* .
 RUN --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build \
-    go mod download
+    go mod tidy && go mod download
 COPY backend/. .
 RUN --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build \
@@ -40,4 +40,4 @@ COPY docker-compose.yaml .
 COPY metadata.json .
 COPY docker.svg .
 COPY --from=client-builder /ui/build ui
-CMD /service -socket /run/guest-services/backend.sock
+CMD ["/service", "-socket", "/run/guest-services/backend.sock"]

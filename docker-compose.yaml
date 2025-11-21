@@ -28,6 +28,8 @@ services:
   penpot-extension:
     image: ${DESKTOP_PLUGIN_IMAGE}
     container_name: penpot-extension-backend
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - penpot
 

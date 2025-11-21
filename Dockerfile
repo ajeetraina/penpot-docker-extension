@@ -31,9 +31,13 @@ LABEL org.opencontainers.image.title="Penpot" \
     com.docker.extension.categories="" \
     com.docker.extension.changelog=""
 
+# Install Docker CLI for compose commands
+RUN apk add --no-cache docker-cli docker-cli-compose
+
 COPY --from=builder /backend/bin/service /
 COPY docker-compose.yaml .
 COPY metadata.json .
 COPY docker.svg .
+COPY penpot.svg .
 COPY --from=client-builder /ui/build ui
 CMD ["/service", "-socket", "/run/guest-services/backend.sock"]

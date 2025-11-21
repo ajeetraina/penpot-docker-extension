@@ -1,14 +1,10 @@
 FROM golang:1.24-alpine AS builder
 ENV CGO_ENABLED=0
 WORKDIR /backend
-COPY backend/go.* .
-RUN --mount=type=cache,target=/go/pkg/mod \
-    --mount=type=cache,target=/root/.cache/go-build \
-    go mod tidy && go mod download
+COPY backend/go.mod .
 COPY backend/. .
-RUN --mount=type=cache,target=/go/pkg/mod \
-    --mount=type=cache,target=/root/.cache/go-build \
-    go build -trimpath -ldflags="-s -w" -o bin/service
+RUN go mod tidy && go mod download
+RUN go build -trimpath -ldflags="-s -w" -o bin/service
 
 FROM --platform=$BUILDPLATFORM node:24-alpine AS client-builder
 WORKDIR /ui

@@ -1,5 +1,11 @@
 {
   "icon": "penpot.svg",
+  "screenshots": [
+    {
+      "alt": "Penpot Docker Extension - Main Dashboard",
+      "url": "https://raw.githubusercontent.com/ajeetraina/penpot-docker-extension/main/screenshots/penpot_screenshot.png"
+    }
+  ],
   "vm": {
     "composefile": "docker-compose.yaml",
     "exposes": {

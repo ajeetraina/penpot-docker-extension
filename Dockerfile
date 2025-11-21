@@ -36,6 +36,7 @@ RUN apk add --no-cache docker-cli docker-cli-compose
 
 COPY --from=builder /backend/bin/service /
 COPY docker-compose.yaml .
+COPY penpot-compose.yaml .
 COPY metadata.json .
 COPY docker.svg .
 COPY penpot.svg .

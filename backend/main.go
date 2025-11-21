@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"os"
@@ -77,11 +78,11 @@ func listen(path string) (net.Listener, error) {
 
 // Response structures
 type ServiceStatus struct {
-	Name    string `json:"name"`
-	Status  string `json:"status"`
-	State   string `json:"state"`
-	Health  string `json:"health"`
-	Ports   string `json:"ports"`
+	Name   string `json:"name"`
+	Status string `json:"status"`
+	State  string `json:"state"`
+	Health string `json:"health"`
+	Ports  string `json:"ports"`
 }
 
 type PenpotStatus struct {
@@ -91,13 +92,13 @@ type PenpotStatus struct {
 }
 
 type HTTPMessageBody struct {
-	Success bool   `json:"success"`
-	Message string `json:"message"`
+	Success bool        `json:"success"`
+	Message string      `json:"message"`
 	Data    interface{} `json:"data,omitempty"`
 }
 
 func getPenpotStatus(ctx echo.Context) error {
-	containers, err := dockerClient.ContainerList(context.Background(), container.ListOptions{
+	containers, err := dockerClient.ContainerList(context.Background(), types.ContainerListOptions{
 		All: true,
 		Filters: filters.NewArgs(
 			filters.Arg("name", "penpot-"),
@@ -126,13 +127,13 @@ func getPenpotStatus(ctx echo.Context) error {
 	services := make([]ServiceStatus, 0)
 	runningCount := 0
 
-	for _, container := range containers {
-		name := strings.TrimPrefix(container.Names[0], "/")
-		
+	for _, c := range containers {
+		name := strings.TrimPrefix(c.Names[0], "/")
+
 		ports := ""
-		if len(container.Ports) > 0 {
+		if len(c.Ports) > 0 {
 			portStrings := make([]string, 0)
-			for _, port := range container.Ports {
+			for _, port := range c.Ports {
 				if port.PublicPort > 0 {
 					portStrings = append(portStrings, fmt.Sprintf("%d:%d", port.PublicPort, port.PrivatePort))
 				}
@@ -141,10 +142,10 @@ func getPenpotStatus(ctx echo.Context) error {
 		}
 
 		health := "N/A"
-		if container.State == "running" {
+		if c.State == "running" {
 			runningCount++
 			// Check health status if available
-			inspect, err := dockerClient.ContainerInspect(context.Background(), container.ID)
+			inspect, err := dockerClient.ContainerInspect(context.Background(), c.ID)
 			if err == nil && inspect.State.Health != nil {
 				health = inspect.State.Health.Status
 			}
@@ -152,8 +153,8 @@ func getPenpotStatus(ctx echo.Context) error {
 
 		services = append(services, ServiceStatus{
 			Name:   name,
-			Status: container.Status,
-			State:  container.State,
+			Status: c.Status,
+			State:  c.State,
 			Health: health,
 			Ports:  ports,
 		})
@@ -172,8 +173,7 @@ func getPenpotStatus(ctx echo.Context) error {
 }
 
 func startPenpot(ctx echo.Context) error {
-	// Get all Penpot containers
-	containers, err := dockerClient.ContainerList(context.Background(), container.ListOptions{
+	containers, err := dockerClient.ContainerList(context.Background(), types.ContainerListOptions{
 		All: true,
 		Filters: filters.NewArgs(
 			filters.Arg("name", "penpot-"),
@@ -196,11 +196,11 @@ func startPenpot(ctx echo.Context) error {
 	}
 
 	startedCount := 0
-	for _, container := range containers {
-		if container.State != "running" {
-			err := dockerClient.ContainerStart(context.Background(), container.ID, container.StartOptions{})
+	for _, c := range containers {
+		if c.State != "running" {
+			err := dockerClient.ContainerStart(context.Background(), c.ID, types.ContainerStartOptions{})
 			if err != nil {
-				logger.Errorf("Failed to start container %s: %v", container.Names[0], err)
+				logger.Errorf("Failed to start container %s: %v", c.Names[0], err)
 			} else {
 				startedCount++
 			}
@@ -214,7 +214,7 @@ func startPenpot(ctx echo.Context) error {
 }
 
 func stopPenpot(ctx echo.Context) error {
-	containers, err := dockerClient.ContainerList(context.Background(), container.ListOptions{
+	containers, err := dockerClient.ContainerList(context.Background(), types.ContainerListOptions{
 		All: true,
 		Filters: filters.NewArgs(
 			filters.Arg("name", "penpot-"),
@@ -230,12 +230,13 @@ func stopPenpot(ctx echo.Context) error {
 	}
 
 	stoppedCount := 0
-	for _, container := range containers {
-		if container.State == "running" {
-			timeout := 10
-			err := dockerClient.ContainerStop(context.Background(), container.ID, container.StopOptions{Timeout: &timeout})
+	timeout := 10
+	stopOpts := container.StopOptions{Timeout: &timeout}
+	for _, c := range containers {
+		if c.State == "running" {
+			err := dockerClient.ContainerStop(context.Background(), c.ID, stopOpts)
 			if err != nil {
-				logger.Errorf("Failed to stop container %s: %v", container.Names[0], err)
+				logger.Errorf("Failed to stop container %s: %v", c.Names[0], err)
 			} else {
 				stoppedCount++
 			}
@@ -249,7 +250,7 @@ func stopPenpot(ctx echo.Context) error {
 }
 
 func restartPenpot(ctx echo.Context) error {
-	containers, err := dockerClient.ContainerList(context.Background(), container.ListOptions{
+	containers, err := dockerClient.ContainerList(context.Background(), types.ContainerListOptions{
 		All: true,
 		Filters: filters.NewArgs(
 			filters.Arg("name", "penpot-"),
@@ -266,10 +267,11 @@ func restartPenpot(ctx echo.Context) error {
 
 	restartedCount := 0
 	timeout := 10
-	for _, container := range containers {
-		err := dockerClient.ContainerRestart(context.Background(), container.ID, container.StopOptions{Timeout: &timeout})
+	stopOpts := container.StopOptions{Timeout: &timeout}
+	for _, c := range containers {
+		err := dockerClient.ContainerRestart(context.Background(), c.ID, stopOpts)
 		if err != nil {
-			logger.Errorf("Failed to restart container %s: %v", container.Names[0], err)
+			logger.Errorf("Failed to restart container %s: %v", c.Names[0], err)
 		} else {
 			restartedCount++
 		}
@@ -283,8 +285,8 @@ func restartPenpot(ctx echo.Context) error {
 
 func getPenpotLogs(ctx echo.Context) error {
 	serviceName := ctx.Param("service")
-	
-	containers, err := dockerClient.ContainerList(context.Background(), container.ListOptions{
+
+	containers, err := dockerClient.ContainerList(context.Background(), types.ContainerListOptions{
 		All: true,
 		Filters: filters.NewArgs(
 			filters.Arg("name", serviceName),
@@ -298,7 +300,7 @@ func getPenpotLogs(ctx echo.Context) error {
 		})
 	}
 
-	options := container.LogsOptions{
+	options := types.ContainerLogsOptions{
 		ShowStdout: true,
 		ShowStderr: true,
 		Tail:       "100",
@@ -313,9 +315,8 @@ func getPenpotLogs(ctx echo.Context) error {
 	}
 	defer logs.Close()
 
-	// Read logs
 	buf := new(strings.Builder)
-	_, err = buf.ReadFrom(logs)
+	_, err = io.Copy(buf, logs)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, HTTPMessageBody{
 			Success: false,

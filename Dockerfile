@@ -20,16 +20,16 @@ RUN npm run build
 
 FROM alpine
 LABEL org.opencontainers.image.title="Penpot" \
-    org.opencontainers.image.description="Docker Extension for Penpot" \
+    org.opencontainers.image.description="Docker Extension for Penpot - Open Source Design Platform" \
     org.opencontainers.image.vendor="Ajeet Singh Raina" \
     com.docker.desktop.extension.api.version="0.4.2" \
-    com.docker.extension.screenshots="" \
-    com.docker.desktop.extension.icon="" \
-    com.docker.extension.detailed-description="" \
-    com.docker.extension.publisher-url="" \
-    com.docker.extension.additional-urls="" \
-    com.docker.extension.categories="" \
-    com.docker.extension.changelog=""
+    com.docker.desktop.extension.icon="https://raw.githubusercontent.com/ajeetraina/penpot-docker-extension/main/penpot.svg" \
+    com.docker.extension.screenshots='[{"alt":"Penpot Dashboard","url":"https://raw.githubusercontent.com/ajeetraina/penpot-docker-extension/main/screenshots/dashboard.png"}]' \
+    com.docker.extension.detailed-description="Penpot is the open-source design and prototyping platform for design and code teams. This extension allows you to run Penpot locally with a single click. Features include: self-hosted design platform, real-time collaboration, SVG-based workflow, and full design-to-code capabilities." \
+    com.docker.extension.publisher-url="https://github.com/ajeetraina" \
+    com.docker.extension.additional-urls='[{"title":"Penpot Website","url":"https://penpot.app"},{"title":"Documentation","url":"https://help.penpot.app"},{"title":"Source Code","url":"https://github.com/ajeetraina/penpot-docker-extension"}]' \
+    com.docker.extension.categories="utility-tools" \
+    com.docker.extension.changelog="<ul><li>Initial release with Penpot deployment</li><li>Start/Stop/Restart controls</li><li>Service status monitoring</li><li>Log viewing capability</li></ul>"
 
 # Install Docker CLI for compose commands
 RUN apk add --no-cache docker-cli docker-cli-compose

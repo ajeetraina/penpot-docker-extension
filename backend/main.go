@@ -114,7 +114,16 @@ func getPenpotStatus(ctx echo.Context) error {
 		})
 	}
 
-	if len(containers) == 0 {
+	// Filter out the extension backend container from the list
+	penpotContainers := make([]types.Container, 0)
+	for _, c := range containers {
+		name := strings.TrimPrefix(c.Names[0], "/")
+		if name != "penpot-extension-backend" {
+			penpotContainers = append(penpotContainers, c)
+		}
+	}
+
+	if len(penpotContainers) == 0 {
 		return ctx.JSON(http.StatusOK, HTTPMessageBody{
 			Success: true,
 			Data: PenpotStatus{
@@ -128,7 +137,7 @@ func getPenpotStatus(ctx echo.Context) error {
 	services := make([]ServiceStatus, 0)
 	runningCount := 0
 
-	for _, c := range containers {
+	for _, c := range penpotContainers {
 		name := strings.TrimPrefix(c.Names[0], "/")
 
 		ports := ""
@@ -168,7 +177,7 @@ func getPenpotStatus(ctx echo.Context) error {
 		Data: PenpotStatus{
 			Running:  isRunning,
 			Services: services,
-			Message:  fmt.Sprintf("%d of %d services running", runningCount, len(containers)),
+			Message:  fmt.Sprintf("%d of %d services running", runningCount, len(penpotContainers)),
 		},
 	})
 }
@@ -189,10 +198,19 @@ func startPenpot(ctx echo.Context) error {
 		})
 	}
 
-	// If no containers exist, deploy with docker compose
-	if len(containers) == 0 {
+	// Filter out the extension backend container
+	penpotContainers := make([]types.Container, 0)
+	for _, c := range containers {
+		name := strings.TrimPrefix(c.Names[0], "/")
+		if name != "penpot-extension-backend" {
+			penpotContainers = append(penpotContainers, c)
+		}
+	}
+
+	// If no Penpot service containers exist, deploy with docker compose
+	if len(penpotContainers) == 0 {
 		logger.Info("No Penpot containers found, deploying with docker compose...")
-		cmd := exec.Command("docker", "compose", "-f", "/docker-compose.yaml", "up", "-d")
+		cmd := exec.Command("docker", "compose", "-f", "/penpot-compose.yaml", "-p", "penpot", "up", "-d")
 		output, err := cmd.CombinedOutput()
 		if err != nil {
 			logger.Errorf("Failed to deploy Penpot: %v, output: %s", err, string(output))
@@ -210,7 +228,7 @@ func startPenpot(ctx echo.Context) error {
 
 	// Start existing stopped containers
 	startedCount := 0
-	for _, c := range containers {
+	for _, c := range penpotContainers {
 		if c.State != "running" {
 			err := dockerClient.ContainerStart(context.Background(), c.ID, types.ContainerStartOptions{})
 			if err != nil {
@@ -247,6 +265,11 @@ func stopPenpot(ctx echo.Context) error {
 	timeout := 10
 	stopOpts := container.StopOptions{Timeout: &timeout}
 	for _, c := range containers {
+		name := strings.TrimPrefix(c.Names[0], "/")
+		// Don't stop the extension backend
+		if name == "penpot-extension-backend" {
+			continue
+		}
 		if c.State == "running" {
 			err := dockerClient.ContainerStop(context.Background(), c.ID, stopOpts)
 			if err != nil {
@@ -283,6 +306,11 @@ func restartPenpot(ctx echo.Context) error {
 	timeout := 10
 	stopOpts := container.StopOptions{Timeout: &timeout}
 	for _, c := range containers {
+		name := strings.TrimPrefix(c.Names[0], "/")
+		// Don't restart the extension backend
+		if name == "penpot-extension-backend" {
+			continue
+		}
 		err := dockerClient.ContainerRestart(context.Background(), c.ID, stopOpts)
 		if err != nil {
 			logger.Errorf("Failed to restart container %s: %v", c.Names[0], err)

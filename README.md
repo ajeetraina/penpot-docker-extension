@@ -26,7 +26,7 @@ A Docker Desktop extension for deploying and managing a self-hosted Penpot insta
 ### Option 1: Install from Docker Hub (Coming Soon)
 
 ```bash
-docker extension install ajeetraina777/penpot-docker-extension:latest
+docker extension install ajeetraina777/penpot-docker-extension:2.0.1
 ```
 
 ### Option 2: Build and Install Locally

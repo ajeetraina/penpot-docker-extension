@@ -99,7 +99,7 @@ type HTTPMessageBody struct {
 }
 
 func getPenpotStatus(ctx echo.Context) error {
-	containers, err := dockerClient.ContainerList(context.Background(), types.ContainerListOptions{
+	containers, err := dockerClient.ContainerList(context.Background(), container.ListOptions{
 		All: true,
 		Filters: filters.NewArgs(
 			filters.Arg("name", "penpot-"),
@@ -183,7 +183,7 @@ func getPenpotStatus(ctx echo.Context) error {
 }
 
 func startPenpot(ctx echo.Context) error {
-	containers, err := dockerClient.ContainerList(context.Background(), types.ContainerListOptions{
+	containers, err := dockerClient.ContainerList(context.Background(), container.ListOptions{
 		All: true,
 		Filters: filters.NewArgs(
 			filters.Arg("name", "penpot-"),
@@ -230,7 +230,7 @@ func startPenpot(ctx echo.Context) error {
 	startedCount := 0
 	for _, c := range penpotContainers {
 		if c.State != "running" {
-			err := dockerClient.ContainerStart(context.Background(), c.ID, types.ContainerStartOptions{})
+			err := dockerClient.ContainerStart(context.Background(), c.ID, container.StartOptions{})
 			if err != nil {
 				logger.Errorf("Failed to start container %s: %v", c.Names[0], err)
 			} else {
@@ -246,7 +246,7 @@ func startPenpot(ctx echo.Context) error {
 }
 
 func stopPenpot(ctx echo.Context) error {
-	containers, err := dockerClient.ContainerList(context.Background(), types.ContainerListOptions{
+	containers, err := dockerClient.ContainerList(context.Background(), container.ListOptions{
 		All: true,
 		Filters: filters.NewArgs(
 			filters.Arg("name", "penpot-"),
@@ -287,7 +287,7 @@ func stopPenpot(ctx echo.Context) error {
 }
 
 func restartPenpot(ctx echo.Context) error {
-	containers, err := dockerClient.ContainerList(context.Background(), types.ContainerListOptions{
+	containers, err := dockerClient.ContainerList(context.Background(), container.ListOptions{
 		All: true,
 		Filters: filters.NewArgs(
 			filters.Arg("name", "penpot-"),
@@ -328,7 +328,7 @@ func restartPenpot(ctx echo.Context) error {
 func getPenpotLogs(ctx echo.Context) error {
 	serviceName := ctx.Param("service")
 
-	containers, err := dockerClient.ContainerList(context.Background(), types.ContainerListOptions{
+	containers, err := dockerClient.ContainerList(context.Background(), container.ListOptions{
 		All: true,
 		Filters: filters.NewArgs(
 			filters.Arg("name", serviceName),
@@ -342,7 +342,7 @@ func getPenpotLogs(ctx echo.Context) error {
 		})
 	}
 
-	options := types.ContainerLogsOptions{
+	options := container.LogsOptions{
 		ShowStdout: true,
 		ShowStderr: true,
 		Tail:       "100",

@@ -1,5 +1,5 @@
 IMAGE?=ajeetraina777/penpot-docker-extension
-TAG?=latest
+TAG?=2.0.0
 
 BUILDER=buildx-multi-arch
 
